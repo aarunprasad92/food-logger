@@ -183,7 +183,7 @@ function loadDashboard() {
 
         div.innerHTML = `
           <div class="metric">${item.metric}</div>
-          <div class="numbers">${item.consumed} / ${item.target}</div>
+          <div class="numbers">${Number(item.consumed).toFixed(1)} / ${Number(item.target).toFixed(1)}</div>
           <div class="bar">
             <div class="fill" style="width:${barWidth}%; background:${color}"></div>
           </div>
