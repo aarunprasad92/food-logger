@@ -26,6 +26,41 @@
       margin-bottom: 20px;
     }
 
+    /* 🔥 DASHBOARD STYLES */
+    .dashboard {
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #f9fafc;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .metric {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .numbers {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .bar {
+      height: 8px;
+      background: #eee;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+
+    .fill {
+      height: 100%;
+      background: #4CAF50;
+      border-radius: 6px;
+    }
+
     label {
       font-size: 14px;
       color: #666;
@@ -58,11 +93,6 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      transform: scale(1.02);
     }
 
     #status {
@@ -75,16 +105,10 @@
       margin-top: 20px;
     }
 
-    .recent-title {
-      font-size: 14px;
-      color: #777;
-      margin-bottom: 8px;
-    }
-
     .chips {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .chip {
@@ -92,13 +116,7 @@
       background: #eef3ff;
       border-radius: 20px;
       cursor: pointer;
-      font-size: 14px;
     }
-
-    .chip:hover {
-      background: #dbe6ff;
-    }
-
   </style>
 </head>
 
@@ -107,6 +125,9 @@
 <div class="container">
 
   <h2>🍽️ Food Logger</h2>
+
+  <!-- 🔥 DASHBOARD -->
+  <div id="dashboard" class="dashboard"></div>
 
   <label>Food</label>
   <input list="foodList" id="food" placeholder="Search food...">
@@ -127,9 +148,7 @@
 
   <p id="status"></p>
 
-  <!-- Recent -->
   <div class="recent">
-    <div class="recent-title">Quick Add</div>
     <div class="chips">
       <div class="chip" onclick="quickAdd('Chicken breast')">Chicken</div>
       <div class="chip" onclick="quickAdd('Boiled white rice')">Rice</div>
@@ -142,8 +161,44 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwm-jKSxHerr7rNhbn2t-QLOn9ruxJWeW0h2DRd0GFklDbO7q2kIddq9ubTxsvXZ79t/exec";
 
-// Load food list
+// 🔥 Load dashboard
+function loadDashboard() {
+  fetch(API_URL + "?type=dashboard")
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById("dashboard");
+      container.innerHTML = "";
+
+      data.forEach(item => {
+        //const percent = Math.min(item.progress * 100, 100);
+        const percent = item.progress * 100;
+        const barWidth = Math.min(percent, 100);
+        console.log(item.metric, percent);
+        let color = 'green';
+        if (percent < 90) color = 'orange';
+        else if (percent > 105) color = 'red';
+
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+          <div class="metric">${item.metric}</div>
+          <div class="numbers">${item.consumed} / ${item.target}</div>
+          <div class="bar">
+            <div class="fill" style="width:${barWidth}%; background:${color}"></div>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+    });
+}
+
+// Load food list + dashboard
 window.onload = function() {
+
+  loadDashboard(); // 🔥 NEW
+
   fetch(API_URL)
     .then(res => res.json())
     .then(foodList => {
@@ -190,6 +245,8 @@ function logFood() {
   .then(() => {
     document.getElementById("status").innerText = "✅ Logged!";
     document.getElementById("qty").value = "";
+
+    loadDashboard(); // 🔥 refresh after logging
   })
   .catch(() => {
     document.getElementById("status").innerText = "❌ Failed";
